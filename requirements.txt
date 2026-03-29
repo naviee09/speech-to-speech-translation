@@ -1,15 +1,22 @@
-pyaudio==0.2.11
-numpy==1.24.3
-webrtcvad==2.0.10
-torch==2.0.1
-torchaudio==2.0.2
-transformers==4.36.0
-openai-whisper==20231117
-soundfile==0.12.1
-pydub==0.25.1
-requests==2.31.0
-python-dotenv==1.0.0
-scipy==1.10.1
-librosa==0.10.0
-pygame==2.5.0
-TTS==0.21.1
+﻿# Core dependencies for my Speech Translator
+# Install with: pip install -r requirements.txt
+
+# Audio capture
+pyaudio>=0.2.11
+
+# Speech recognition
+SpeechRecognition>=3.10.0
+
+# Text to speech
+gTTS>=2.3.0
+
+# Audio playback
+pygame>=2.5.0
+
+# HTTP requests
+requests>=2.31.0
+
+# Audio processing
+numpy>=1.24.0
+webrtcvad>=2.0.10
+soundfile>=0.12.0

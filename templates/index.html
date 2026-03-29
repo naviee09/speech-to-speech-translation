@@ -1,0 +1,358 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Complete Speech System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { text-align: center; color: white; margin-bottom: 10px; font-size: 2.5rem; }
+        .subtitle { text-align: center; color: rgba(255,255,255,0.9); margin-bottom: 30px; font-size: 1.1rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .card h2 { color: #667eea; margin-bottom: 15px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        button { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; margin: 5px; transition: all 0.3s; }
+        button:hover { background: #5a67d8; transform: scale(1.02); }
+        button.record { background: #e74c3c; }
+        button.record.recording { background: #c0392b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        textarea, input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .result { background: #f7f7f7; padding: 15px; border-radius: 8px; margin-top: 15px; word-wrap: break-word; }
+        .status { margin-top: 10px; font-size: 0.9rem; color: #666; }
+        .entry-list, .recording-list { max-height: 300px; overflow-y: auto; }
+        .entry-item, .recording-item { background: #f7f7f7; padding: 10px; margin: 10px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .delete-btn, .listen-btn { padding: 5px 10px; font-size: 0.8rem; }
+        .delete-btn { background: #e74c3c; }
+        .listen-btn { background: #27ae60; }
+        audio { width: 100%; margin-top: 10px; }
+        footer { text-align: center; color: white; margin-top: 30px; padding: 20px; }
+        .video-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ My Complete Speech System</h1>
+        <p class="subtitle">Everything with voice - Now with VIDEO support!</p>
+        
+        <div class="grid">
+            <!-- Speech to Text -->
+            <div class="card">
+                <h2>🎤 Speech to Text</h2>
+                <button id="sttRecord" class="record">🔴 Record</button>
+                <div id="sttResult" class="result"></div>
+                <div id="sttStatus" class="status"></div>
+            </div>
+            
+            <!-- Text to Speech -->
+            <div class="card">
+                <h2>🔊 Text to Speech</h2>
+                <textarea id="ttsText" rows="3" placeholder="Enter text here..."></textarea>
+                <select id="ttsLang">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                </select>
+                <button id="ttsSpeak">🔊 Speak</button>
+                <button id="ttsSave">💾 Save as Audio</button>
+                <div id="ttsStatus" class="status"></div>
+            </div>
+            
+            <!-- Video to Text/Speech - NEW! -->
+            <div class="card">
+                <h2>🎬 Video to Text/Speech</h2>
+                <p>Upload a video, extract text or speech</p>
+                <input type="file" id="videoFile" accept="video/*">
+                <select id="videoLang">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                </select>
+                <div class="video-controls">
+                    <button id="videoToText">📝 Video to Text</button>
+                    <button id="videoToSpeech">🎤 Video to Speech</button>
+                    <button id="videoSaveText">💾 Save as Text</button>
+                </div>
+                <div id="videoResult" class="result"></div>
+                <div id="videoStatus" class="status"></div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Speech Translation -->
+            <div class="card">
+                <h2>🌐 Speech Translation</h2>
+                <select id="translateLang">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                </select>
+                <button id="translateRecord" class="record">🔴 Record & Translate</button>
+                <div id="translateResult" class="result"></div>
+                <div id="translateStatus" class="status"></div>
+            </div>
+            
+            <!-- Audio to Text -->
+            <div class="card">
+                <h2>📁 Audio to Text</h2>
+                <input type="file" id="audioFile" accept="audio/*">
+                <button id="uploadAudio">📝 Convert to Text</button>
+                <div id="audioResult" class="result"></div>
+                <div id="audioStatus" class="status"></div>
+            </div>
+            
+            <!-- Voice Diary -->
+            <div class="card">
+                <h2>📔 My Voice Diary</h2>
+                <input type="text" id="entryTitle" placeholder="Entry title...">
+                <textarea id="entryContent" rows="3" placeholder="Your thoughts..."></textarea>
+                <button id="saveEntry">💾 Save Entry</button>
+                <button id="speakEntry">🎤 Speak Entry</button>
+                <div id="diaryStatus" class="status"></div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- Recordings -->
+            <div class="card">
+                <h2>💾 My Recordings</h2>
+                <button id="saveRecordingBtn" class="record">🔴 Record & Save</button>
+                <button id="refreshRecordings">🔄 Refresh</button>
+                <div id="recordingStatus" class="status"></div>
+                <div id="recordingsList" class="recording-list"></div>
+            </div>
+            
+            <!-- Diary Entries -->
+            <div class="card">
+                <h2>📜 My Journal</h2>
+                <button id="refreshEntries">🔄 Refresh</button>
+                <div id="entriesList" class="entry-list"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built by me | Speech to Text | Text to Speech | Video to Text | Speech Translation | Voice Diary</p>
+        </footer>
+    </div>
+    
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let currentRecordType = null;
+        
+        async function startRecording(type) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.wav');
+                
+                if (type === 'stt') {
+                    document.getElementById('sttStatus').innerHTML = 'Processing...';
+                    const response = await fetch('/speech_to_text', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) {
+                        document.getElementById('sttResult').innerHTML = `<strong>You said:</strong> ${result.text}`;
+                        document.getElementById('sttStatus').innerHTML = '✅ Done!';
+                    } else {
+                        document.getElementById('sttResult').innerHTML = `❌ ${result.error}`;
+                    }
+                } 
+                else if (type === 'translate') {
+                    const lang = document.getElementById('translateLang').value;
+                    formData.append('lang', lang);
+                    document.getElementById('translateStatus').innerHTML = 'Translating...';
+                    const response = await fetch('/speech_to_speech', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) {
+                        document.getElementById('translateResult').innerHTML = `
+                            <strong>You said:</strong> ${result.original}<br>
+                            <strong>Translation:</strong> ${result.translated}<br>
+                            <audio controls autoplay><source src="/download_recording/${result.audio.split('/').pop()}" type="audio/mpeg"></audio>
+                        `;
+                        document.getElementById('translateStatus').innerHTML = '✅ Done!';
+                    } else {
+                        document.getElementById('translateResult').innerHTML = `❌ ${result.error}`;
+                    }
+                }
+                else if (type === 'save') {
+                    document.getElementById('recordingStatus').innerHTML = 'Saving...';
+                    const response = await fetch('/save_recording', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) {
+                        document.getElementById('recordingStatus').innerHTML = `✅ Saved: ${result.filename}`;
+                        loadRecordings();
+                    } else {
+                        document.getElementById('recordingStatus').innerHTML = `❌ ${result.error}`;
+                    }
+                }
+                stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                updateRecordButtons();
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            currentRecordType = type;
+            updateRecordButtons();
+        }
+        
+        function stopRecording() { if (mediaRecorder && isRecording) mediaRecorder.stop(); }
+        
+        function updateRecordButtons() {
+            const sttBtn = document.getElementById('sttRecord');
+            const translateBtn = document.getElementById('translateRecord');
+            const saveBtn = document.getElementById('saveRecordingBtn');
+            if (isRecording) {
+                if (currentRecordType === 'stt') sttBtn.innerHTML = '⏹️ Stop';
+                if (currentRecordType === 'translate') translateBtn.innerHTML = '⏹️ Stop';
+                if (currentRecordType === 'save') saveBtn.innerHTML = '⏹️ Stop';
+            } else {
+                sttBtn.innerHTML = '🔴 Record';
+                translateBtn.innerHTML = '🔴 Record & Translate';
+                saveBtn.innerHTML = '🔴 Record & Save';
+            }
+        }
+        
+        document.getElementById('sttRecord').onclick = () => { if (!isRecording) startRecording('stt'); else stopRecording(); };
+        document.getElementById('translateRecord').onclick = () => { if (!isRecording) startRecording('translate'); else stopRecording(); };
+        document.getElementById('saveRecordingBtn').onclick = () => { if (!isRecording) startRecording('save'); else stopRecording(); };
+        
+        // Text to Speech
+        document.getElementById('ttsSpeak').onclick = async () => {
+            const text = document.getElementById('ttsText').value;
+            const lang = document.getElementById('ttsLang').value;
+            if (!text) { alert('Please enter text'); return; }
+            document.getElementById('ttsStatus').innerHTML = 'Generating...';
+            const response = await fetch('/text_to_speech', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text, lang: lang }) });
+            if (response.ok) { const blob = await response.blob(); const audio = new Audio(URL.createObjectURL(blob)); audio.play(); document.getElementById('ttsStatus').innerHTML = '✅ Speaking...'; }
+            else { document.getElementById('ttsStatus').innerHTML = '❌ Error'; }
+        };
+        
+        document.getElementById('ttsSave').onclick = async () => {
+            const text = document.getElementById('ttsText').value;
+            const lang = document.getElementById('ttsLang').value;
+            if (!text) { alert('Please enter text'); return; }
+            const response = await fetch('/text_to_speech', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text, lang: lang }) });
+            if (response.ok) { const blob = await response.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'speech.mp3'; a.click(); document.getElementById('ttsStatus').innerHTML = '✅ Saved!'; }
+        };
+        
+        // Video Functions - NEW!
+        document.getElementById('videoToText').onclick = async () => {
+            const file = document.getElementById('videoFile').files[0];
+            if (!file) { alert('Select a video file'); return; }
+            const formData = new FormData(); formData.append('video', file);
+            document.getElementById('videoStatus').innerHTML = 'Processing video...';
+            const response = await fetch('/video_to_text', { method: 'POST', body: formData });
+            const result = await response.json();
+            if (result.success) { document.getElementById('videoResult').innerHTML = `<strong>Text from video:</strong><br>${result.text}`; document.getElementById('videoStatus').innerHTML = '✅ Done!'; }
+            else { document.getElementById('videoStatus').innerHTML = `❌ ${result.error}`; }
+        };
+        
+        document.getElementById('videoToSpeech').onclick = async () => {
+            const file = document.getElementById('videoFile').files[0];
+            const lang = document.getElementById('videoLang').value;
+            if (!file) { alert('Select a video file'); return; }
+            const formData = new FormData(); formData.append('video', file); formData.append('lang', lang);
+            document.getElementById('videoStatus').innerHTML = 'Processing...';
+            const response = await fetch('/video_to_speech', { method: 'POST', body: formData });
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('videoResult').innerHTML = `<strong>Original:</strong> ${result.original}<br><strong>Translated:</strong> ${result.translated}<br><audio controls autoplay><source src="/download_recording/${result.audio_file.split('/').pop()}" type="audio/mpeg"></audio>`;
+                document.getElementById('videoStatus').innerHTML = '✅ Done!';
+            } else { document.getElementById('videoStatus').innerHTML = `❌ ${result.error}`; }
+        };
+        
+        document.getElementById('videoSaveText').onclick = async () => {
+            const file = document.getElementById('videoFile').files[0];
+            if (!file) { alert('Select a video file'); return; }
+            const formData = new FormData(); formData.append('video', file);
+            document.getElementById('videoStatus').innerHTML = 'Processing...';
+            const response = await fetch('/video_save_text', { method: 'POST', body: formData });
+            if (response.ok) { const blob = await response.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'video_text.txt'; a.click(); document.getElementById('videoStatus').innerHTML = '✅ Text file downloaded!'; }
+            else { document.getElementById('videoStatus').innerHTML = '❌ Error'; }
+        };
+        
+        // Audio to Text
+        document.getElementById('uploadAudio').onclick = async () => {
+            const file = document.getElementById('audioFile').files[0];
+            if (!file) { alert('Select an audio file'); return; }
+            const formData = new FormData(); formData.append('audio', file);
+            document.getElementById('audioStatus').innerHTML = 'Processing...';
+            const response = await fetch('/audio_to_text', { method: 'POST', body: formData });
+            const result = await response.json();
+            if (result.success) { document.getElementById('audioResult').innerHTML = `<strong>Text:</strong> ${result.text}`; document.getElementById('audioStatus').innerHTML = '✅ Done!'; }
+            else { document.getElementById('audioResult').innerHTML = `❌ ${result.error}`; }
+        };
+        
+        // Diary Functions
+        document.getElementById('saveEntry').onclick = async () => {
+            const title = document.getElementById('entryTitle').value;
+            const content = document.getElementById('entryContent').value;
+            if (!title) { alert('Enter title'); return; }
+            const response = await fetch('/add_entry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, content }) });
+            const result = await response.json();
+            if (result.success) { document.getElementById('diaryStatus').innerHTML = '✅ Saved!'; document.getElementById('entryTitle').value = ''; document.getElementById('entryContent').value = ''; loadEntries(); }
+            else { document.getElementById('diaryStatus').innerHTML = '❌ Error'; }
+        };
+        
+        document.getElementById('speakEntry').onclick = async () => {
+            const content = document.getElementById('entryContent').value;
+            if (!content) { alert('No content'); return; }
+            const response = await fetch('/text_to_speech', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: content, lang: 'en' }) });
+            if (response.ok) { const blob = await response.blob(); const audio = new Audio(URL.createObjectURL(blob)); audio.play(); }
+        };
+        
+        async function loadEntries() {
+            const response = await fetch('/get_entries');
+            const data = await response.json();
+            const container = document.getElementById('entriesList');
+            container.innerHTML = '';
+            data.entries.reverse().forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'entry-item';
+                div.innerHTML = `<strong>📝 ${entry.title}</strong><br><small>${entry.date}</small><br><p>${entry.content.substring(0, 100)}...</p><button class="listen-btn" onclick="speakText('${entry.content.replace(/'/g, "\\'")}')">🔊 Listen</button><button class="delete-btn" onclick="deleteEntry(${entry.id})">🗑️ Delete</button>`;
+                container.appendChild(div);
+            });
+        }
+        
+        window.deleteEntry = async (id) => { if (confirm('Delete?')) { await fetch(`/delete_entry/${id}`, { method: 'DELETE' }); loadEntries(); } };
+        window.speakText = async (text) => { const response = await fetch('/text_to_speech', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, lang: 'en' }) }); if (response.ok) { const blob = await response.blob(); const audio = new Audio(URL.createObjectURL(blob)); audio.play(); } };
+        
+        async function loadRecordings() {
+            const response = await fetch('/get_recordings');
+            const data = await response.json();
+            const container = document.getElementById('recordingsList');
+            container.innerHTML = '';
+            data.recordings.forEach(rec => {
+                const div = document.createElement('div');
+                div.className = 'recording-item';
+                div.innerHTML = `<span>${rec.name}</span><div><a href="${rec.path}" download><button>⬇️ Download</button></a><button onclick="playRecording('${rec.path}')">🔊 Play</button></div>`;
+                container.appendChild(div);
+            });
+        }
+        
+        window.playRecording = (path) => { const audio = new Audio(path); audio.play(); };
+        
+        document.getElementById('refreshEntries').onclick = loadEntries;
+        document.getElementById('refreshRecordings').onclick = loadRecordings;
+        
+        loadEntries();
+        loadRecordings();
+    </script>
+</body>
+</html>
